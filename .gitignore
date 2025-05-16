@@ -1,1 +1,12 @@
-
+# Stata files
+*.dta
+*.log
+*.smcl
+# Data directory (exclude actual data)
+data/*
+!data/README.md
+# Output logs and tables
+output/*
+# Temporary files
+*.tmp
+*.bak
