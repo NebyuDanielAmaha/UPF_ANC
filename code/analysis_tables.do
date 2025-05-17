@@ -24,7 +24,7 @@ svy: tab anc_counsel, count percent
 svy: tab upf_binary, count percent
 svy: tab nt_wm_mdd, count percent
 svy: tab age_cat, count percent
-svy: tab educ_grouped, count percent
+svy: tab education, count percent
 svy: tab wealth, count percent
 svy: tab urban_rural, count percent
 svy: tab marital_status, count percent
@@ -120,9 +120,3 @@ lincom [upf_binary]1.anc_counsel, or
 nlcom (_indirect: [foodsum]1.anc_counsel * [upf_binary]foodsum)
 est store sup_table_foodsum
 esttab sup_table_foodsum using "output/tables/SupTableFoodsum.rtf", ci(2) star(* 0.05 ** 0.01 *** 0.001) replace
-
-* Commented Out: Moderation Analysis (per manuscript)
-* svy: logistic upf_binary i.anc_counsel##i.educ_grouped i.age_cat i.wealth ...
-* svy: logistic upf_binary i.anc_counsel##i.age_cat i.educ_grouped i.wealth ...
-* svy: logistic upf_binary i.anc_counsel##i.wealth i.age_cat i.educ_grouped ...
-* svy: logistic upf_binary i.anc_counsel##i.serious_problem i.age_cat i.educ_grouped ...
