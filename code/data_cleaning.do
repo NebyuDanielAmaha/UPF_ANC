@@ -131,25 +131,14 @@ replace anc_visits = . if m14 >= 98
 label define anc_visits 0 "<4 visits" 1 "≥4 visits"
 label values anc_visits anc_visits
 
-* 7. Cesarean Delivery
-gen caesarean = (m17 == 1)
-replace caesarean = . if m17 >= 8
-label define cs 0 "No" 1 "Yes"
-label values caesarean cs
 
-* 8. Postnatal Check
-gen postnatal_check = (m70 == 1)
-replace postnatal_check = . if m70 >= 8
-label define pnc 0 "No" 1 "Yes"
-label values postnatal_check pnc
-
-* 9. Vitamin A-Rich Foods
+* 7. Vitamin A-Rich Foods
 gen vita_binary = (nt_wm_vita > 0 & !missing(nt_wm_vita))
 replace vita_binary = . if nt_wm_vita >= 8
 label define vita 0 "None" 1 "Any"
 label values vita_binary vita
 
-* 10. Healthcare Access Barriers
+* 8. Healthcare Access Barriers
 gen serious_problem = 0
 foreach var in v467b v467c v467d v467f {
     replace serious_problem = 1 if `var' == 1
@@ -158,7 +147,7 @@ replace serious_problem = . if missing(v467b) & missing(v467c) & missing(v467d) 
 label define prob 0 "No" 1 "Yes"
 label values serious_problem prob
 
-* 11. Travel Time
+* 9. Travel Time
 gen travel_time = 0 if v483a < 30 & !missing(v483a)
 replace travel_time = 1 if v483a >= 30 & v483a < 60 & !missing(v483a)
 replace travel_time = 2 if v483a >= 60 & v483a <= 120 & !missing(v483a)
@@ -167,6 +156,72 @@ replace travel_time = . if v483a >= 998
 label define travel 0 "<30 min" 1 "30 min–<1 hr" 2 "1-2 hr" 3 ">2 hr"
 label values travel_time travel
 
-* 12. Transport Mode
+* 10. Transport Mode
 recode v483b (11/19=1 "Motorized") (21/29=0 "Non-motorized") (96=.), gen(transport_mode)
 label var transport_mode "Transport to health facility"
+
+* 11. Media exposure
+*Media exposure - newspaper
+recode v157 (2/3=1 "Yes") (0/1=0 "No"), gen(rc_media_newsp)
+label var rc_media_newsp "Reads a newspaper at least once a week"
+
+*Media exposure - TV
+recode v159 (2/3=1 "Yes") (0/1=0 "No"), gen(rc_media_tv)
+label var rc_media_tv "Watches television at least once a week"
+
+*Media exposure - Radio
+recode v158 (2/3=1 "Yes") (0/1=0 "No"), gen(rc_media_radio)
+label var rc_media_radio "Listens to radio at least once a week"
+
+*Media exposure - all three
+gen rc_media_allthree=0
+replace rc_media_allthree=1 if inlist(v157,2,3) & inlist(v158,2,3) & inrange(v159,2,3) 
+label values rc_media_allthree yesno
+label var rc_media_allthree "Accesses to all three media at least once a week"
+
+
+* Generate binary variable for media exposure (any of the three: radio, TV, newspaper)
+gen rc_media_anythree = 0
+replace rc_media_anythree = 1 if inlist(v157, 2, 3) | inlist(v158, 2, 3) | inlist(v159, 2, 3)
+label values rc_media_anythree yesno
+label var rc_media_anythree "Accesses at least one media (radio, TV, or newspaper) at least once a week"
+
+
+*Media exposure - none
+gen rc_media_none=0
+replace rc_media_none=1 if (v157!=2 & v157!=3) & (v158!=2 & v158!=3) & (v159!=2 & v159!=3) 
+label values rc_media_none yesno
+label var rc_media_none "Accesses none of the three media at least once a week"
+
+* 12. Internet Use
+*Ever used internet
+* Indicator not available in all surveys so will add cap
+cap recode v171a (0=0 "No") (1/3=1 "Yes"), gen(rc_intr_ever) 
+cap label var rc_intr_ever "Ever used the internet"
+
+*Used interent in the past 12 months
+* Indicator not available in all surveys so will add cap
+cap recode v171a (0 2/3=0 "No") (1=1 "Yes"), gen(rc_intr_use12mo) 
+cap label var rc_intr_use12mo "Used the internet in the past 12 months"
+
+*Internet use frequency
+* Indicator not available in all surveys so will add cap
+cap gen rc_intr_usefreq= v171b if v171a==1
+cap label values rc_intr_usefreq MV171B
+cap label var rc_intr_usefreq "Internet use frequency in the past month - among users in the past 12 months"
+
+* 13. Currently working
+gen working = v714
+label define yesno 0 "No" 1 "Yes"
+label values working yesno
+label variable working "Currently working (Yes/No)"
+
+* 14. Parity
+gen parity_cat = .
+replace parity_cat = 1 if inrange(v201, 1, 2)
+replace parity_cat = 2 if inrange(v201, 3, 4)
+replace parity_cat = 3 if v201 >= 5
+label define parity_lbl 1 "1–2 children" 2 "3–4 children" 3 "5+ children"
+label values parity_cat parity_lbl
+label var parity_cat "Categorical parity (children ever born)"
+
